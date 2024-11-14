@@ -26,28 +26,38 @@ print(scores)
 
 ## Part 2. This code (from https://scikit-learn.org/1.5/auto_examples/ensemble/plot_forest_hist_grad_boosting_comparison.html)
 ## shows how to use GridSearchCV to do a hyperparameter search to compare two techniques.
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_digits # changed dataset
 
-X,y = load_breast_cancer(return_X_y=True, as_frame=True)
+print("### Using GridSearchCV with Random Forest on Digits dataset ###")
+X,y = load_digits(return_X_y=True, as_frame=True)
 
 N_CORES = joblib.cpu_count(only_physical_cores=True)
 print(f"Number of physical cores: {N_CORES}")
 
 models = {
-    "Random Forest": RandomForestClassifier(
-        min_samples_leaf=5, random_state=0, n_jobs=N_CORES
-    ),
-    "Hist Gradient Boosting": HistGradientBoostingClassifier(
-        max_leaf_nodes=15, random_state=0, early_stopping=False
-    ),
-}
-param_grids = {
-    "Random Forest": {"n_estimators": [10, 20, 50, 100]},
-    "Hist Gradient Boosting": {"max_iter": [10, 20, 50, 100, 300, 500]},
-}
-cv = KFold(n_splits=2, shuffle=True, random_state=0)
+    "Random Forest":RandomForestClassifier(random_state=0, n_jobs=N_CORES),
+    "Hist Gradient Boosting": HistGradientBoostingClassifier(random_state=0, early_stopping=False),
 
+}
+
+param_grids = {
+    "Random Forest": {
+        "n_estimators": [5, 10, 15, 20],
+        "criterion": ['gini', 'entropy']
+    },
+    "Hist Gradient Boosting": {
+        "max_iter": [25, 50, 75, 100]
+    },
+}
+cv = KFold(n_splits=5, shuffle=True, random_state=0)
+
+# Store results
 results = []
+
+
+
+# Fit the model to the data
+
 for name, model in models.items():
     grid_search = GridSearchCV(
         estimator=model,
@@ -57,8 +67,16 @@ for name, model in models.items():
     ).fit(X, y)
     result = {"model": name, "cv_results": pd.DataFrame(grid_search.cv_results_)}
     results.append(result)
+    # Fit the model to the data
+    grid_search.fit(X, y)
 
-print(results)
+# Printing the results
+for result in results:
+    print(f"Model: {result['model']}")
+    print(result['cv_results'][['params', 'mean_test_score', 'std_test_score']])
+
+
+
 
 #### Part 3: This shows how to generate a scatter plot of your results
 

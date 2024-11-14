@@ -46,13 +46,35 @@ cpd_marycalls = TabularCPD(
 state_names={"Alarm":['yes','no'], "MaryCalls":['yes', 'no']},
 )
 
+
 # Associating the parameters with the model structure
 alarm_model.add_cpds(
     cpd_burglary, cpd_earthquake, cpd_alarm, cpd_johncalls, cpd_marycalls)
 
 alarm_infer = VariableElimination(alarm_model)
 
-print(alarm_infer.query(variables=["JohnCalls"],evidence={"Earthquake":"yes"}))
-q = alarm_infer.query(variables=["JohnCalls", "Earthquake"],evidence={"Burglary":"yes","MaryCalls":"yes"}))
-print(q)
+# Now I need to add a main that runs these
+
+if __name__ == "__main__":
+
+    #Queries that I am adding // Need to add 3
+    #Query 1
+    q1 = alarm_infer.query(variables=["MaryCalls"], evidence={"JohnCalls": "yes"})
+    print(q1)
+    # Query 2
+    q2 = alarm_infer.query(variables=["MaryCalls", "JohnCalls"], evidence= {"Alarm":"yes"})
+    print(q2)
+    # Query 3
+    q3 = alarm_infer.query(variables=["Alarm"], evidence={"MaryCalls": "yes"})
+    print(q3)
+
+
+    print(alarm_infer.query(variables=["JohnCalls"],evidence={"Earthquake":"yes"}))
+    q = alarm_infer.query(variables=["JohnCalls", "Earthquake"],evidence={"Burglary":"yes","MaryCalls":"yes"})
+    print(q)
+
+
+
+
+
 
